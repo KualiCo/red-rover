@@ -6,7 +6,9 @@ const spy = require('chai').spy
 const redRover = require('..')
 
 describe('red-rover', () => {
-
+  const cfg = {
+    port: 32768,
+  }
   let subs = []
   let pub
 
@@ -18,8 +20,8 @@ describe('red-rover', () => {
 
   it('recieves events', (done) => {
     const eventSpy = spy()
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     subs[0].on('event', eventSpy)
     pub.emit('event')
     pub.emit('event')
@@ -30,8 +32,8 @@ describe('red-rover', () => {
   })
 
   it('passes data', (done) => {
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     subs[0].on('event', (data) => {
       expect(data).to.be.eql({
         foo: 'bar',
@@ -48,10 +50,10 @@ describe('red-rover', () => {
   it('handles event only once per group', (done) => {
     const groupSpy = spy()
     const group2Spy = spy()
-    subs[0] = redRover.subscriberGroup('group')
-    subs[1] = redRover.subscriberGroup('group')
-    subs[2] = redRover.subscriberGroup('group2')
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriberGroup('group', cfg)
+    subs[1] = redRover.subscriberGroup('group', cfg)
+    subs[2] = redRover.subscriberGroup('group2', cfg)
+    pub = redRover.publisher(cfg)
     subs[0].on('event', groupSpy)
     subs[1].on('event', groupSpy)
     subs[2].on('event', group2Spy)
@@ -65,8 +67,8 @@ describe('red-rover', () => {
 
   it('can use .once', (done) => {
     const eventSpy = spy()
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     subs[0].once('event', eventSpy)
     pub.emit('event')
     pub.emit('event')
@@ -77,8 +79,8 @@ describe('red-rover', () => {
   })
 
   it('can unsubscribe from a single subscription', (done) => {
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     let count = 0
     subs[0].on('event', () => {
       if (++count > 1) return done(new Error('called more than once'))
@@ -93,8 +95,8 @@ describe('red-rover', () => {
   })
 
   it('can dispose of all subscriptions', (done) => {
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     let count = 0
     subs[0].on('event', () => {
       if (++count > 1) return done(new Error('called more than once'))
@@ -109,8 +111,8 @@ describe('red-rover', () => {
   })
 
   it('issues commands', () => {
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     subs[0].onCommand('event', (data) => {
       expect(data).to.be.eql({ name: 'Kenneth' })
       return Promise.resolve({ message: `Hello ${data.name}` })
@@ -121,8 +123,8 @@ describe('red-rover', () => {
 
   it('subscribes on a pattern', (done) => {
     const eventSpy = spy()
-    subs[0] = redRover.subscriber()
-    pub = redRover.publisher()
+    subs[0] = redRover.subscriber(cfg)
+    pub = redRover.publisher(cfg)
     subs[0].on('events:*', eventSpy)
     pub.emit('event:foo')
     pub.emit('event:bar')
