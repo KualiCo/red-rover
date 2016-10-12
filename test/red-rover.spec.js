@@ -3,48 +3,66 @@
 
 const expect = require('chai').expect
 const spy = require('chai').spy
-const redRover = require('..')
+const RedRover = require('..')
 
 describe('red-rover', () => {
   const cfg = {
     port: 32768,
   }
+  const redRover = new RedRover(cfg)
   let subs = []
   let pub
 
   afterEach(() => {
-    subs.forEach((sub) => sub.dispose())
+    subs.forEach((sub) => {
+      sub.unsubscribe()
+      sub.quit()
+    })
     subs = []
-    if (pub) pub.dispose()
+    if (pub) pub.quit()
   })
 
   it('recieves events', (done) => {
-    const eventSpy = spy()
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
-    subs[0].on('event', eventSpy).then(() => {
-      pub.emit('event')
-      pub.emit('event')
-      setTimeout(() => {
-        expect(eventSpy).to.have.been.called(2)
-        done()
-      }, 50)
-    })
+    const CHANNEL = 'events'
+    subs[0] = redRover.subscriber()
+    pub = redRover.publisher()
+
+    subs[0].subscribe(CHANNEL)
+      .then((count) => {
+        expect(count).to.equal(1)
+        subs[0].on('message', receipt)
+        pub.publish(CHANNEL)
+        pub.publish(CHANNEL)
+      })
+
+    let cnt = 0
+    function receipt(channel, message) {
+      expect(message).to.have.property('_id')
+      expect(cnt).to.be.below(3)
+      if (++cnt === 2) done()
+    }
   })
 
   it('passes data', (done) => {
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
-    subs[0].on('event', (eventName, data) => {
-      expect(data).to.have.property('foo', 'bar')
-      expect(data).to.have.property('hello', 'world')
-      done()
-    }).then(() => {
-      pub.emit('event', {
-        foo: 'bar',
-        hello: 'world',
+    const CHANNEL = 'events'
+    const DATA = {
+      foo: 'bar',
+      hello: 'world',
+    }
+    subs[0] = redRover.subscriber()
+    pub = redRover.publisher()
+
+    subs[0].subscribe(CHANNEL)
+      .then(() => {
+        subs[0].on('message', receipt)
+        pub.publish(CHANNEL, DATA)
       })
-    })
+
+    function receipt(channel, message) {
+      expect(message).to.have.property('foo', 'bar')
+      expect(message).to.have.property('hello', 'world')
+      done()
+    }
   })
 
   it('handles event only once per group', (done) => {
