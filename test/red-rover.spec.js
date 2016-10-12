@@ -66,22 +66,34 @@ describe('red-rover', () => {
   })
 
   it('handles event only once per group', (done) => {
-    const groupSpy = spy()
-    const group2Spy = spy()
-    subs[0] = redRover.subscriberGroup('group', cfg)
-    subs[1] = redRover.subscriberGroup('group', cfg)
-    subs[2] = redRover.subscriberGroup('group2', cfg)
-    pub = redRover.publisher(cfg)
-    Promise.all([
-      subs[0].on('event', groupSpy),
-      subs[1].on('event', groupSpy),
-      subs[2].on('event', group2Spy),
-    ]).then(() => {
-      pub.emit('event')
-    })
+    const CHANNEL = 'events'
+    const GROUP_1 = 'group 1'
+    const GROUP_2 = 'group 2'
+    const SPY_0 = spy()
+    const SPY_1 = spy()
+    const SPY_2 = spy()
+
+    subs[0] = redRover.subscriber()
+    subs[1] = redRover.subscriber(GROUP_1)
+    subs[2] = redRover.subscriber(GROUP_2)
+    subs[3] = redRover.subscriber(GROUP_2)
+    pub = redRover.publisher()
+
+    Promise.all(subs.map((sub) => sub.subscribe(CHANNEL)))
+      .then(() => {
+        subs[0].on('message', SPY_0)
+        subs[1].on('message', SPY_1)
+        subs[2].on('message', SPY_2)
+        subs[3].on('message', SPY_2)
+      })
+      .then(() => {
+        pub.publish(CHANNEL)
+      })
+
     setTimeout(() => {
-      expect(groupSpy).to.have.been.called(1)
-      expect(group2Spy).to.have.been.called(1)
+      expect(SPY_0).to.have.been.called(1)
+      expect(SPY_1).to.have.been.called(1)
+      expect(SPY_2).to.have.been.called(1)
       done()
     }, 50)
   })
