@@ -99,46 +99,85 @@ describe('red-rover', () => {
   })
 
   it('can use .once', (done) => {
-    const eventSpy = spy()
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
-    subs[0].once('event', eventSpy)
-    pub.emit('event')
-    pub.emit('event')
+    const CHANNEL = 'events'
+    pub = redRover.publisher()
+
+    redRover.once(CHANNEL)
+      .then((message) => {
+        expect(message).to.have.property('_id')
+        done()
+      })
+
     setTimeout(() => {
-      expect(eventSpy).to.have.been.called(1)
-      done()
+      pub.publish(CHANNEL)
+      pub.publish(CHANNEL)
     }, 50)
   })
 
   it('can unsubscribe from a single subscription', (done) => {
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
+    const CHANNEL = 'events'
+    subs[0] = redRover.subscriber()
+    pub = redRover.publisher()
+
     let count = 0
-    subs[0].on('event', () => {
-      if (++count > 1) return done(new Error('called more than once'))
-      subs[0].unsubscribe('event')
-      return pub.emit('event')
-    })
-    pub.emit('event')
+    subs[0].subscribe(CHANNEL)
+      .then(() => {
+        subs[0].on('message', () => {
+          count++
+          subs[0].unsubscribe(CHANNEL)
+          pub.publish(CHANNEL)
+        })
+        pub.publish(CHANNEL)
+      })
+
     setTimeout(() => {
       expect(count).to.be.equal(1)
       done()
-    }, 50)
+    }, 150)
   })
 
   it('can dispose of all subscriptions', (done) => {
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
-    let count = 0
-    subs[0].on('event', () => {
-      if (++count > 1) return done(new Error('called more than once'))
-      subs[0].dispose()
-      pub.emit('event')
-    })
-    pub.emit('event')
+    const CHANNEL_1 = 'events one'
+    const CHANNEL_2 = 'events two'
+    const CHANNEL_3 = 'events three'
+
+    subs[0] = redRover.subscriber()
+    pub = redRover.publisher()
+
+    Promise.all([
+      subs[0].subscribe(CHANNEL_1),
+      subs[0].subscribe(CHANNEL_2),
+      subs[0].subscribe(CHANNEL_3),
+    ])
+      .then(() => {
+        subs[0].on('message', retreive)
+      })
+      .then(() => {
+        pub.publish(CHANNEL_1)
+        pub.publish(CHANNEL_2)
+        pub.publish(CHANNEL_3)
+      })
+      .then(() => subs[0].unsubscribe())
+      .then(() => {
+        pub.publish(CHANNEL_1)
+        pub.publish(CHANNEL_2)
+        pub.publish(CHANNEL_3)
+      })
+
+    const counts = {
+      [CHANNEL_1]: 0,
+      [CHANNEL_2]: 0,
+      [CHANNEL_3]: 0,
+    }
+
+    function retreive(channel) {
+      counts[channel]++
+    }
+
     setTimeout(() => {
-      expect(count).to.be.equal(1)
+      expect(counts[CHANNEL_1]).to.be.equal(1)
+      expect(counts[CHANNEL_2]).to.be.equal(1)
+      expect(counts[CHANNEL_3]).to.be.equal(1)
       done()
     }, 50)
   })
