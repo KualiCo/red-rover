@@ -22,28 +22,28 @@ describe('red-rover', () => {
     const eventSpy = spy()
     subs[0] = redRover.subscriber(cfg)
     pub = redRover.publisher(cfg)
-    subs[0].on('event', eventSpy)
-    pub.emit('event')
-    pub.emit('event')
-    setTimeout(() => {
-      expect(eventSpy).to.have.been.called(2)
-      done()
-    }, 50)
+    subs[0].on('event', eventSpy).then(() => {
+      pub.emit('event')
+      pub.emit('event')
+      setTimeout(() => {
+        expect(eventSpy).to.have.been.called(2)
+        done()
+      }, 50)
+    })
   })
 
   it('passes data', (done) => {
     subs[0] = redRover.subscriber(cfg)
     pub = redRover.publisher(cfg)
-    subs[0].on('event', (data) => {
-      expect(data).to.be.eql({
+    subs[0].on('event', (eventName, data) => {
+      expect(data).to.have.property('foo', 'bar')
+      expect(data).to.have.property('hello', 'world')
+      done()
+    }).then(() => {
+      pub.emit('event', {
         foo: 'bar',
         hello: 'world',
       })
-      done()
-    })
-    pub.emit('event', {
-      foo: 'bar',
-      hello: 'world',
     })
   })
 
@@ -54,10 +54,13 @@ describe('red-rover', () => {
     subs[1] = redRover.subscriberGroup('group', cfg)
     subs[2] = redRover.subscriberGroup('group2', cfg)
     pub = redRover.publisher(cfg)
-    subs[0].on('event', groupSpy)
-    subs[1].on('event', groupSpy)
-    subs[2].on('event', group2Spy)
-    pub.emit('event')
+    Promise.all([
+      subs[0].on('event', groupSpy),
+      subs[1].on('event', groupSpy),
+      subs[2].on('event', group2Spy),
+    ]).then(() => {
+      pub.emit('event')
+    })
     setTimeout(() => {
       expect(groupSpy).to.have.been.called(1)
       expect(group2Spy).to.have.been.called(1)
