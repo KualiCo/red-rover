@@ -13,6 +13,13 @@ describe('red-rover', () => {
   let subs = []
   let pub
 
+  before(() => {
+    // redRover.monitor((time, args, raw_reply) => {
+    //   const ts = new Date(Math.round(time * 1000)).toLocaleTimeString()
+    //   console.log(`[${ts}] ${args}`)
+    // })
+  })
+
   afterEach(() => {
     subs.forEach((sub) => {
       sub.unsubscribe()
@@ -59,8 +66,8 @@ describe('red-rover', () => {
       })
 
     function receipt(channel, message) {
-      expect(message).to.have.property('foo', 'bar')
-      expect(message).to.have.property('hello', 'world')
+      expect(message.msg).to.have.property('foo', 'bar')
+      expect(message.msg).to.have.property('hello', 'world')
       done()
     }
   })
@@ -79,39 +86,51 @@ describe('red-rover', () => {
     subs[3] = redRover.subscriber(GROUP_2)
     pub = redRover.publisher()
 
+    let count = 0
+    let timer
+    const incr = (amount) => {
+      clearTimeout(timer)
+      count += amount
+      timer = setTimeout(check, 15)
+    }
+
     Promise.all(subs.map((sub) => sub.subscribe(CHANNEL)))
       .then(() => {
-        subs[0].on('message', SPY_0)
-        subs[1].on('message', SPY_1)
-        subs[2].on('message', SPY_2)
-        subs[3].on('message', SPY_2)
+        subs[0].on('message', () => { incr(1) })
+        subs[1].on('message', () => { incr(10) })
+        subs[2].on('message', () => { incr(100) })
+        subs[3].on('message', () => { incr(100) })
       })
       .then(() => {
         pub.publish(CHANNEL)
       })
 
-    setTimeout(() => {
-      expect(SPY_0).to.have.been.called(1)
-      expect(SPY_1).to.have.been.called(1)
-      expect(SPY_2).to.have.been.called(1)
+    function check() {
+      expect(count).to.equal(111)
       done()
-    }, 50)
+    }
   })
 
   it('can use .once', (done) => {
     const CHANNEL = 'events'
     pub = redRover.publisher()
 
+    let isDone = false
     redRover.once(CHANNEL)
       .then((message) => {
         expect(message).to.have.property('_id')
-        done()
+        isDone = true
       })
 
-    setTimeout(() => {
-      pub.publish(CHANNEL)
-      pub.publish(CHANNEL)
-    }, 50)
+    function recursivePublish(delay) {
+      if (isDone) return done()
+      setTimeout(() => {
+        pub.publish(CHANNEL)
+        recursivePublish(delay + delay)
+      }, delay) 
+    }
+
+    recursivePublish(2)
   })
 
   it('can unsubscribe from a single subscription', (done) => {
@@ -120,20 +139,28 @@ describe('red-rover', () => {
     pub = redRover.publisher()
 
     let count = 0
+    let start
     subs[0].subscribe(CHANNEL)
       .then(() => {
-        subs[0].on('message', () => {
-          count++
-          subs[0].unsubscribe(CHANNEL)
-          pub.publish(CHANNEL)
-        })
+        subs[0].on('message', onMessage)
         pub.publish(CHANNEL)
+        start = Date.now()
       })
 
-    setTimeout(() => {
-      expect(count).to.be.equal(1)
-      done()
-    }, 150)
+    function onMessage() {
+      count++
+
+      subs[0].unsubscribe(CHANNEL)
+        .then(() => { pub.publish(CHANNEL) })
+        .then(check(Date.now() - start))
+    }
+
+    function check(ms) {
+      setTimeout(() => {
+        expect(count).to.be.equal(1)
+        done()
+      }, 2 * ms)
+    }
   })
 
   it('can dispose of all subscriptions', (done) => {
@@ -144,66 +171,77 @@ describe('red-rover', () => {
     subs[0] = redRover.subscriber()
     pub = redRover.publisher()
 
+    const counts = {
+      [CHANNEL_1]: 0,
+      [CHANNEL_2]: 0,
+      [CHANNEL_3]: 0,
+    }
+    let start
+    let checks = 0
+
     Promise.all([
       subs[0].subscribe(CHANNEL_1),
       subs[0].subscribe(CHANNEL_2),
       subs[0].subscribe(CHANNEL_3),
     ])
       .then(() => {
-        subs[0].on('message', retreive)
+        subs[0].on('message', onMessage)
       })
       .then(() => {
-        pub.publish(CHANNEL_1)
-        pub.publish(CHANNEL_2)
-        pub.publish(CHANNEL_3)
-      })
-      .then(() => subs[0].unsubscribe())
-      .then(() => {
+        start = Date.now()
         pub.publish(CHANNEL_1)
         pub.publish(CHANNEL_2)
         pub.publish(CHANNEL_3)
       })
 
-    const counts = {
-      [CHANNEL_1]: 0,
-      [CHANNEL_2]: 0,
-      [CHANNEL_3]: 0,
-    }
-
-    function retreive(channel) {
+    function onMessage(channel) {
       counts[channel]++
+      subs[0].unsubscribe()
+        .then(() => {
+          pub.publish(CHANNEL_1)
+          pub.publish(CHANNEL_2)
+          pub.publish(CHANNEL_3)
+          
+          if (!checks++) check(Date.now() - start)
+        })
     }
 
-    setTimeout(() => {
-      expect(counts[CHANNEL_1]).to.be.equal(1)
-      expect(counts[CHANNEL_2]).to.be.equal(1)
-      expect(counts[CHANNEL_3]).to.be.equal(1)
-      done()
-    }, 50)
+    function check(ms) {
+      setTimeout(() => {
+        expect(counts[CHANNEL_1]).to.be.equal(1)
+        expect(counts[CHANNEL_2]).to.be.equal(1)
+        expect(counts[CHANNEL_3]).to.be.equal(1)
+        done()
+      }, ms * 2)
+    }
   })
 
   it('subscribes on a pattern', (done) => {
-    const eventSpy = spy()
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
-    subs[0].on('events:*', eventSpy)
-    pub.emit('event:foo')
-    pub.emit('event:bar')
-    setTimeout(() => {
-      expect(eventSpy).to.have.been.called(2)
-      done()
-    }, 50)
-  })
+    const CHANNEL_1 = 'test.example.com/events/users/update'
+    const CHANNEL_2 = 'test.example.com/events/users/create'
+    const CHANNEL_3 = 'test.example.com/events/notifications'
+    const CHANNEL_S = 'test.example.com/events/users/*'
 
-  it('retries event', (done) => {
     subs[0] = redRover.subscriber()
     pub = redRover.publisher()
-    let count = 0
-    subs[0].on('event', () => {
-      if (count++ === 0) throw new Error('transient error')
+
+    subs[0].psubscribe(CHANNEL_S)
+      .then(() => {
+        subs[0].on('pmessage', receipt)
+        pub.publish(CHANNEL_1, 1)
+        pub.publish(CHANNEL_2, 10)
+        pub.publish(CHANNEL_3, 100)
+      })
+
+    let totals = 0
+    function receipt(pchannel, channel, message) {
+      totals += message.msg
+    }
+
+    setTimeout(() => {
+      expect(totals).to.equal(11)
       done()
-    })
-    pub.emit('event')
+    }, 50)
   })
 
   it('global error handling')

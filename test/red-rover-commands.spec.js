@@ -3,24 +3,13 @@
 
 const expect = require('chai').expect
 const spy = require('chai').spy
-const RedRoverCommands = require('../lib/red-rover-commands')
+const RedRoverCommands = require('..')
 
 describe('red-rover-commands', () => {
   const cfg = {
     port: 32768,
   }
   const commands = new RedRoverCommands(cfg)
-  let subs = []
-  let pub
-
-  afterEach(() => {
-    subs.forEach((sub) => {
-      sub.unsubscribe()
-      sub.quit()
-    })
-    subs = []
-    if (pub) pub.quit()
-  })
 
   it('issues commands', (done) => {
     const CHANNEL = 'commands'
@@ -28,20 +17,20 @@ describe('red-rover-commands', () => {
       commands.receiver(CHANNEL),
       commands.sender(CHANNEL)
     ])
-      .then(values => ({
-        receiver: values[0],
-        sender: values[1],
-      }))
       .then(comm => {
-        comm.receiver((msg) => {
+        comm[0].receive((msg) => {
           return 'World'
         })
         return comm
       })
       .then(comm => {
-        comm.sender('Hello', (resp) => {
+        comm[1].send('Hello', (resp) => {
           expect(resp.msg).to.equal('World')
-          done()
+          Promise.all([
+            comm[0].stop(),
+            comm[1].stop()
+          ])
+            .then(() => done())
         })
       })
   })
@@ -65,21 +54,23 @@ describe('red-rover-commands', () => {
             return value
           }
         }
-        resp[0](receiverCallback(1))
-        resp[1](receiverCallback(10))
-        resp[2](receiverCallback(100))
-        resp[3](receiverCallback(100))
+        resp[0].receive(receiverCallback(1))
+        resp[1].receive(receiverCallback(10))
+        resp[2].receive(receiverCallback(100))
+        resp[3].receive(receiverCallback(100))
         return resp
       })
       .then((resp) => {
-        resp[4]('Hello', (response) => {
+        resp[4].send('Hello', (response) => {
           totals += response.msg
         })
+        return resp
       })
-      .then(() => {
+      .then((resp) => {
         setTimeout(() => {
           expect(totals).to.equal(111)
-          done()
+          Promise.all(resp.map((conn) => conn.stop()))
+            .then(() => done())
         }, 50)
       })
   })
