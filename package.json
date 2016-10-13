@@ -15,7 +15,22 @@
       "ksmithut/mocha"
     ],
     "rules": {
-      "no-underscore-dangle": "off"
+      "no-underscrore-dangle": [
+        "allow"
+      ],
+      "brace-style": [
+        "error",
+        "stroustrup",
+        {
+          "allowSingleLine": true
+        }
+      ],
+      "object-property-newline": [
+        "error",
+        {
+          "allowMultiplePropertiesPerLine": true
+        }
+      ]
     }
   },
   "keywords": [],
