@@ -183,11 +183,47 @@ which the subscriber is listening will call the handler.
   arguments, the channel and the payload that the event emits.
 
 
-### `subscriber.once(channel[, group])`
+## Once
 
-Same as `subscriber.on`, but unsubscribes from the channel when it handles the
-event once. Returns a promise that is funfilled with the message when it
-receives an event.
+### `redRover.once(channel[, group])`
+
+Subscribes to a channel for a single event. Once an event is received the 
+promise is fulfilled and the subscription is cleaned up.
 
 - `channel` (String) - The channel on which to listen
 - `group` (String) - Optional.
+
+
+## Commands
+
+### Sender
+Send a event and expect responses
+```js
+redRover.sender(channel)
+  // the returned promise is fulfilled when channel subscriptions are setup
+  .then((sender) => {
+    // send an event for which you expect a response
+    sender.send(event, (response) => {
+      // handle returned response
+    })
+    // call stop when you are done
+    sender.stop()
+  })
+```
+
+
+### Receiver
+Respond to sender events
+```js
+redRover.receiver(channel, group)
+  // the returned promise is fulfilled when channel subscriptions are setup
+  .then((receiver) => {
+    // receive an event for which you will send a response
+    receiver.receive((event) => {
+      // act on event - return your response or a promise
+    })
+    // call stop when you are done
+    receiver.stop()
+  })
+```
+
