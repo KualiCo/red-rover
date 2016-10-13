@@ -182,17 +182,6 @@ describe('red-rover', () => {
     }, 50)
   })
 
-  it('issues commands', () => {
-    subs[0] = redRover.subscriber(cfg)
-    pub = redRover.publisher(cfg)
-    subs[0].onCommand('event', (data) => {
-      expect(data).to.be.eql({ name: 'Kenneth' })
-      return Promise.resolve({ message: `Hello ${data.name}` })
-    })
-    return expect(pub.command('event', { name: 'Kenneth' }))
-      .to.eventually.eql({ message: 'Hello Kenneth' })
-  })
-
   it('subscribes on a pattern', (done) => {
     const eventSpy = spy()
     subs[0] = redRover.subscriber(cfg)

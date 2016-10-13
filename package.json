@@ -15,6 +15,9 @@
       "ksmithut/mocha"
     ],
     "rules": {
+      "no-underscrore-dangle": [
+        "allow"
+      ],
       "brace-style": [
         "error",
         "stroustrup",
