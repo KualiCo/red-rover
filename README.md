@@ -56,6 +56,7 @@ subscriber.subscribe('user:created')
 ```
 
 ## Group Subscribe
+Allows delivery to only one of many subscribers.
 ```js
 const subscriber = redRover.subscriber('production-group')
 subscriber.subscribe('user:created')
@@ -65,7 +66,7 @@ subscriber.subscribe('user:created')
     })
   })
 ```
-In the circumstance when you desire a single response from a group of
+In the circumstance when you desire a single event delivery to a group of
 subscribers you can create a subscriber group that will act as a single
 subscriber. This is particularly useful if you have load-balanced servers
 but you only want a single action to take place.
@@ -153,7 +154,7 @@ Publishes a message the the passed channel.
 Quits this publisher. No more events may be sent.
 
 
-## Subsbriber
+## Subscriber
 
 ### `subscriber.subscribe(channel)`
 
@@ -195,6 +196,16 @@ promise is fulfilled and the subscription is cleaned up.
 
 
 ## Commands
+RedRover commands leverage publishers and subscribers to allow for 
+bi-directional communication. The `Sender` creates a second channel on which
+responses can be sent. The `Receiver` uses the second channel to return
+a response to the `Sender`.
+
+Although commands support groups, they still have no idea how many `Receivers`
+might be listening or respond. This is necessary to enable complete decoupling.
+The only way to ensure that a `Sender` receieve a single response is to have
+all receivers be members of the same group. This is unenforceable through code
+in the current version.
 
 ### Sender
 Send a event and expect responses
