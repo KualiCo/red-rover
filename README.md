@@ -1,5 +1,26 @@
 # red-rover
 
+A JavaScript event publisher/subscriber built on Redis' great pub/sub platform.
+RedRover allows applications and services to communicate events without
+foreknowledge of integrating systems. This decoupling allows for improved
+application simplicity through isolation.
+
+RedRover has three simple mechanisms for publishing events
+1. Simple Publish and Subscribe
+Applications have the ability to publish an event, including relevant event
+data. Any subscribers would recieve the event and data.
+2. Group Subscribe
+Applications in a load balanced or clustered configuration could subscribe
+to published events as a group. This unique feature of RedRobin makes it so
+that only one member of the group receives the event.
+3. Commands
+Commands allow for bi-directional pub/sub. They provide a return channel while
+still allowing publishers and subscribers to be completely unaware of
+eachother.
+
+RedRover is ready for use. It comes complete with documentation, a full suite
+of tests, and performance benchmarks that you can run in your own environment.
+
 A JavaScript event publisher/subscriber backed by Redis. 
 > Red Rover, Red Rover, send `user:created` right over
 
