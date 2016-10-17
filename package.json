@@ -1,12 +1,16 @@
 {
   "name": "@kuali/red-rover",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A utility library to handle distributed redis subscriptions.",
   "main": "index.js",
   "scripts": {
     "test:unit": "istanbul cover _mocha",
     "test:lint": "eslint . --ignore-path .gitignore"
   },
+  "files": [
+    "lib",
+    "index.js"
+  ],
   "eslintConfig": {
     "extends": [
       "ksmithut",
@@ -34,8 +38,8 @@
     }
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "kuali",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
