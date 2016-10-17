@@ -7,6 +7,10 @@
     "test:unit": "istanbul cover _mocha",
     "test:lint": "eslint . --ignore-path .gitignore"
   },
+  "files": [
+    "lib",
+    "index.js"
+  ],
   "eslintConfig": {
     "extends": [
       "ksmithut",
