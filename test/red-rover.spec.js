@@ -29,6 +29,21 @@ describe('red-rover', () => {
     if (pub) pub.quit()
   })
 
+  it.only('fails silently', (done) => {
+    const redRover2 = new RedRover({ host: 'die' }, true)
+    const CHANNEL = 'events'
+
+    subs[0] = redRover2.subscriber()
+    pub = redRover2.publisher()
+
+    subs[0].subscribe(CHANNEL)
+      .then((count) => {
+        assert(false, 'should not subscribe')
+      })
+
+    setTimeout(done, 100)
+  })
+
   it('recieves events', (done) => {
     const CHANNEL = 'events'
     subs[0] = redRover.subscriber()
