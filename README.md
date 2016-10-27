@@ -49,10 +49,11 @@ npm install --save @kuali/red-rover
 
 Using red-rover is easy. After requiring it, instantiate it by passing in 
 your configuration. Omitting a configuration will attempt to connect to a 
-local redis on the default port of 6379.  
+local redis on the default port of 6379. Optional `failSilently` `boolean`
+flag may be added to allow red-rover to swallow any errors.
 ```js
 const RedRover = require('@kuali/red-rover')
-const redRover = new RedRover(config)
+const redRover = new RedRover(config, failSilently)
 ```
 
 Create publishers and/or subscribers.
