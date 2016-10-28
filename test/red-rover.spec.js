@@ -29,7 +29,7 @@ describe('red-rover', () => {
     if (pub) pub.quit()
   })
 
-  it.only('fails silently', (done) => {
+  it('fails silently', (done) => {
     const redRover2 = new RedRover({ host: 'die' }, true)
     const CHANNEL = 'events'
 
