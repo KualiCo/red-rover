@@ -1,4 +1,5 @@
 # red-rover
+[![npm version](https://badge.fury.io/js/%40kuali%2Fred-rover.svg)](https://badge.fury.io/js/%40kuali%2Fred-rover)
 
 A JavaScript event publisher/subscriber built on Redis' great pub/sub platform.
 RedRover allows applications and services to communicate events without
