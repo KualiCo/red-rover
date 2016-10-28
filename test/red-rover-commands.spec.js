@@ -6,10 +6,7 @@ const spy = require('chai').spy
 const RedRoverCommands = require('..')
 
 describe('red-rover-commands', () => {
-  const cfg = {
-    port: 32768,
-  }
-  const commands = new RedRoverCommands(cfg)
+  const commands = new RedRoverCommands({ port: 6379 })
 
   it('issues commands', (done) => {
     const CHANNEL = 'commands'
@@ -74,7 +71,5 @@ describe('red-rover-commands', () => {
         }, 50)
       })
   })
-
-  it('global error handling')
 
 })
