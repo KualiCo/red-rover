@@ -1,5 +1,5 @@
 # red-rover
-[![npm version](https://badge.fury.io/js/%40kuali%2Fred-rover.svg)](https://badge.fury.io/js/%40kuali%2Fred-rover)
+[![npm version](https://badge.fury.io/js/red-rover.svg)](https://badge.fury.io/js/red-rover)
 
 A JavaScript event publisher/subscriber built on Redis' great pub/sub platform.
 RedRover allows applications and services to communicate events without
@@ -43,7 +43,7 @@ framework. Sometimes you just want to publish events.
 You must have `node` and `npm` installed
 
 ```
-npm install --save @kuali/red-rover
+npm install --save red-rover
 ```
 
 # Usage
@@ -53,7 +53,7 @@ your configuration. Omitting a configuration will attempt to connect to a
 local redis on the default port of 6379. Optional `failSilently` `boolean`
 flag may be added to allow red-rover to swallow any errors.
 ```js
-const RedRover = require('@kuali/red-rover')
+const RedRover = require('red-rover')
 const redRover = new RedRover(config, failSilently)
 ```
 
@@ -103,7 +103,7 @@ Two of the subscribers are signed up with `group1`, and the other is a part of
 one of the subscribers from each group will pick up the event.
 
 ```js
-const redRover = require('@kuali/red-rover')()
+const redRover = require('red-rover')()
 
 const subscriber1 = redRover.subscriber('group1')
 const subscriber2 = redRover.subscriber('group1')
@@ -136,7 +136,7 @@ subscriber.subscribe('user:created')
 
 # Config options
 ```js
-const RedRover = require('@kuali/red-rover')
+const RedRover = require('red-rover')
 const redRover = new RedRover({
   host: '127.0.0.1',
   port: 6379   

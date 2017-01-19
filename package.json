@@ -1,6 +1,6 @@
 {
   "name": "red-rover",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A utility library to handle distributed redis subscriptions.",
   "main": "index.js",
   "scripts": {
@@ -9,9 +9,33 @@
     "test:lint": "eslint . --ignore-path .gitignore"
   },
   "files": [
-    "lib",
+    "src",
     "index.js"
   ],
+  "keywords": [],
+  "author": "kuali",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KualiCo/red-rover.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kualico/red-rover/issues"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "chai-spies": "^0.7.1",
+    "eslint": "^3.7.1",
+    "eslint-config-ksmithut": "^2.2.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.2",
+    "nyc": "^10.1.2"
+  },
+  "dependencies": {
+    "redis": "^2.6.2",
+    "uuid": "^2.0.3"
+  },
   "eslintConfig": {
     "extends": [
       "ksmithut",
@@ -37,23 +61,6 @@
         }
       ]
     }
-  },
-  "keywords": [],
-  "author": "kuali",
-  "license": "AGPL-3.0",
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
-    "chai-spies": "^0.7.1",
-    "eslint": "^3.7.1",
-    "eslint-config-ksmithut": "^2.2.2",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.1.2",
-    "nyc": "^10.1.2"
-  },
-  "dependencies": {
-    "redis": "^2.6.2",
-    "uuid": "^2.0.3"
   },
   "nyc": {
     "all": true,
