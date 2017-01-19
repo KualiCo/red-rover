@@ -6,10 +6,7 @@ const spy = require('chai').spy
 const RedRover = require('..')
 
 describe('red-rover', () => {
-  const cfg = {
-    port: 32768,
-  }
-  const redRover = new RedRover(cfg)
+  const redRover = new RedRover({ port: 6379 })
   let subs = []
   let pub
 
@@ -41,7 +38,11 @@ describe('red-rover', () => {
         assert(false, 'should not subscribe')
       })
 
-    setTimeout(done, 100)
+    let interval = setInterval(() => pub.publish(CHANNEL), 100)
+    setTimeout(() => {
+      clearInterval(interval)
+      done()
+    }, 320)
   })
 
   it('recieves events', (done) => {
@@ -258,7 +259,5 @@ describe('red-rover', () => {
       done()
     }, 50)
   })
-
-  it('global error handling')
 
 })
