@@ -1,3 +1,3 @@
 'use strict'
 
-module.exports = require('./lib/red-rover-commands')
+module.exports = require('./src/red-rover-commands')

@@ -5,3 +5,4 @@ coverage
 *.rdb
 *.db
 *.env
+.nyc_output

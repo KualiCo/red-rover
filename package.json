@@ -1,9 +1,10 @@
 {
-  "name": "@kuali/red-rover",
-  "version": "0.1.2",
+  "name": "red-rover",
+  "version": "1.0.0",
   "description": "A utility library to handle distributed redis subscriptions.",
   "main": "index.js",
   "scripts": {
+    "test": "nyc mocha --inline-diffs",
     "test:unit": "istanbul cover _mocha",
     "test:lint": "eslint . --ignore-path .gitignore"
   },
@@ -47,10 +48,29 @@
     "eslint": "^3.7.1",
     "eslint-config-ksmithut": "^2.2.2",
     "istanbul": "^0.4.5",
-    "mocha": "^3.1.2"
+    "mocha": "^3.1.2",
+    "nyc": "^10.1.2"
   },
   "dependencies": {
     "redis": "^2.6.2",
     "uuid": "^2.0.3"
+  },
+  "nyc": {
+    "all": true,
+    "check-coverage": true,
+    "exclude": [
+      "benchmark/**",
+      "coverage/**"
+    ],
+    "reporter": [
+      "lcov",
+      "html",
+      "text-summary"
+    ],
+    "instrument": true,
+    "statements": 90,
+    "branches": 68,
+    "functions": 90,
+    "lines": 90
   }
 }
